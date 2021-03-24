@@ -37,23 +37,30 @@ module Fetch =
     let download (fromLocation:string) saveTo survey seed =
         async {
             try
+                //https://dr12.sdss.org/sas/dr12/boss/spectro/redux/v5_7_0/spectra/3655/spec-3655-55240-0040.fits
+                let baseAddress = "https://dr12.sdss.org"
                 let wc = new WebClient()
                 wc.Encoding <- Encoding.ASCII
                 wc.Headers.Set("Content-Type", "image/fits")
                 
                 let downloadDestination = Path.Combine ( (Path.GetFullPath saveTo), "downloads")
+
                 if not <| Directory.Exists(downloadDestination )
-                then Directory.CreateDirectory(downloadDestination) |> ignore
+                then
+                    printfn "Creating %s" downloadDestination
+                    Directory.CreateDirectory(downloadDestination).Refresh()
                                         
                 let defaultFileNameRaw = sprintf "%s_%s_%s" survey (seed.ToString().PadLeft(4, '0')) <| (fromLocation.Split('/') |> Seq.rev |> Seq.head)
                 let defaultFileName = defaultFileNameRaw.Replace(".aspx?sid=", "")
                 let downloadTo = Path.Combine(downloadDestination, defaultFileName)
-                printfn "Saving as %s" downloadTo
                 
-                wc.DownloadFile(fromLocation, downloadTo )
+                let from = baseAddress + fromLocation
+                wc.DownloadFile( from, downloadTo )
                 
                 return Result.Ok "FITS File Successfully Downloaded."
-            with e -> return Result.Error e.Message
+            with e ->
+                printfn "inner: %s" e.InnerException.Message
+                return Result.Error e.Message
         }
         
     let private downloadFitsFile (fitsLocation:HtmlNode) saveTo survey seed =
