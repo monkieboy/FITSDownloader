@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FITSDownloader", "FITSDownloader\FITSDownloader.fsproj", "{3CC13821-1B95-4300-A5F9-8EAC941CA29B}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FITSDownloader.Tests", "FITSDownloader.Tests\FITSDownloader.Tests.fsproj", "{63042F29-2455-4A09-9611-D7F4F7D235EE}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BulkFITSDownloader", "BulkFITSDownloader\BulkFITSDownloader.fsproj", "{CE35B117-24F9-4B00-B471-A88ED7396EC0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3CC13821-1B95-4300-A5F9-8EAC941CA29B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CC13821-1B95-4300-A5F9-8EAC941CA29B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CC13821-1B95-4300-A5F9-8EAC941CA29B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CC13821-1B95-4300-A5F9-8EAC941CA29B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63042F29-2455-4A09-9611-D7F4F7D235EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63042F29-2455-4A09-9611-D7F4F7D235EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63042F29-2455-4A09-9611-D7F4F7D235EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63042F29-2455-4A09-9611-D7F4F7D235EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE35B117-24F9-4B00-B471-A88ED7396EC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE35B117-24F9-4B00-B471-A88ED7396EC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE35B117-24F9-4B00-B471-A88ED7396EC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE35B117-24F9-4B00-B471-A88ED7396EC0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
