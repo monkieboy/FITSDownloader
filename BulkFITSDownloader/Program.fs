@@ -13,8 +13,9 @@ module Program =
 
     let downloadAndLogEachItem saveTo survey i (item:string) =
         let fromLocation = item.Split(',') |> Seq.last
+
         try
-            match download fromLocation saveTo survey i |> Async.RunSynchronously with
+            match downloadFitsFileFrom fromLocation saveTo survey i with
             | Result.Ok _ ->
                 printfn " - Downloaded %s" fromLocation 
                 good.AppendLine(fromLocation) |> ignore
@@ -26,7 +27,6 @@ module Program =
         try
             let results = parser.ParseCommandLine(inputs = argv, raiseOnUsage = true)
 
-            printfn "Here"
             let survey = results.GetResult(Survey)
             let saveTo = results.GetResult(SaveTo)
             let inputFile = results.GetResult(InputFile)
@@ -35,6 +35,7 @@ module Program =
             printfn "Bulk Download Started..."
             data |> Seq.iteri (downloadAndLogEachItem saveTo survey)
             printfn "Bulk Download Completed."
+
             File.AppendAllText(Path.Combine(Path.GetFullPath(inputFile), "bad.log"), bad.ToString())
             File.AppendAllText(Path.Combine(Path.GetFullPath(inputFile), "good.log"), good.ToString())
             

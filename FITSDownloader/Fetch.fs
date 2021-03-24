@@ -37,19 +37,21 @@ module Fetch =
     let download (fromLocation:string) saveTo survey seed =
         async {
             try
-                let dataLoc = fromLocation // "https://dr12.sdss.org" + 
                 let wc = new WebClient()
+                wc.Encoding <- Encoding.ASCII
+                wc.Headers.Set("Content-Type", "image/fits")
                 
                 let downloadDestination = Path.Combine ( (Path.GetFullPath saveTo), "downloads")
                 if not <| Directory.Exists(downloadDestination )
                 then Directory.CreateDirectory(downloadDestination) |> ignore
                                         
-                let defaultFileName = sprintf "%s_%s_%s" survey (seed.ToString().PadLeft(4, '0')) <| (dataLoc.Split('/') |> Seq.rev |> Seq.head)
+                let defaultFileNameRaw = sprintf "%s_%s_%s" survey (seed.ToString().PadLeft(4, '0')) <| (fromLocation.Split('/') |> Seq.rev |> Seq.head)
+                let defaultFileName = defaultFileNameRaw.Replace(".aspx?sid=", "")
+                let downloadTo = Path.Combine(downloadDestination, defaultFileName)
+                printfn "Saving as %s" downloadTo
                 
-                wc.Encoding <- Encoding.ASCII
-                wc.Headers.Set("Content-Type", "image/fits")
-                wc.DownloadFile(dataLoc, Path.Combine(downloadDestination, defaultFileName) )
-
+                wc.DownloadFile(fromLocation, downloadTo )
+                
                 return Result.Ok "FITS File Successfully Downloaded."
             with e -> return Result.Error e.Message
         }
