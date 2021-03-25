@@ -27,7 +27,7 @@ module FetchTesting =
         match Fetch.doc fromLocation |> getHtml with
         | Some element ->
             let body = body element
-            match body |> findAnchor (InnerText"Interactive spectrum") with
+            match body |> findAnchors (InnerText"Interactive spectrum") with
             | Result.Ok link ->
                 match link.TryGetAttribute "href" with
                 | Some href ->

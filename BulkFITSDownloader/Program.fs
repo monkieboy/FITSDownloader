@@ -30,14 +30,18 @@ module Program =
             let survey = results.GetResult(Survey)
             let saveTo = results.GetResult(SaveTo)
             let inputFile = results.GetResult(InputFile)
-            let data = File.ReadAllLines  inputFile |> Seq.skip 1
+            let data = File.ReadAllLines  inputFile |> Seq.skip 1 |> Seq.take 1
+            let badLog = Path.Combine(Path.GetDirectoryName (inputFile), "bad.log")
+            let goodLog = Path.Combine(Path.GetDirectoryName(inputFile), "good.log")
+            printfn "Will save a log of errors to: %s" badLog
+            printfn "Will save a log for successful downloads to: %s" goodLog
             
             printfn "Bulk Download Started..."
             data |> Seq.iteri (downloadAndLogEachItem saveTo survey)
             printfn "Bulk Download Completed."
 
-            File.AppendAllText(Path.Combine(Path.GetFullPath(inputFile), "bad.log"), bad.ToString())
-            File.AppendAllText(Path.Combine(Path.GetFullPath(inputFile), "good.log"), good.ToString())
+            File.AppendAllText(badLog, bad.ToString())            
+            File.AppendAllText(goodLog, good.ToString())
             
         with e ->
             printfn "%s" e.Message
