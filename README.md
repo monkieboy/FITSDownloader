@@ -1,6 +1,6 @@
 # FITSDownloader
 
-The program expects the link to the quickview page to be the last parameter.
+The program expects the link to the quickview page to be the last parameter in the CSV input file.
 
 To run execute on commandline like so (options are case sensitive):
 
