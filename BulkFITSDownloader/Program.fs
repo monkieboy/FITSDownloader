@@ -10,12 +10,13 @@ module Program =
 
     let good = StringBuilder()
     let bad = StringBuilder()
+    let headerRow = 1
 
     let downloadAndLogEachItem saveTo survey i (item:string) =
         let fromLocation = item.Split(',') |> Seq.last
 
         try
-            match downloadFitsFileFrom fromLocation saveTo survey i with
+            match downloadFitsFileFrom webClientDownloader fromLocation saveTo survey i with
             | Result.Ok _ ->
                 printfn " - Downloaded %s" fromLocation 
                 good.AppendLine(fromLocation) |> ignore
@@ -30,7 +31,7 @@ module Program =
             let survey = results.GetResult(Survey)
             let saveTo = results.GetResult(SaveTo)
             let inputFile = results.GetResult(InputFile)
-            let data = File.ReadAllLines  inputFile |> Seq.skip 1 |> Seq.take 1
+            let data = File.ReadAllLines  inputFile |> Seq.skip headerRow
             let badLog = Path.Combine(Path.GetDirectoryName (inputFile), "bad.log")
             let goodLog = Path.Combine(Path.GetDirectoryName(inputFile), "good.log")
             printfn "Will save a log of errors to: %s" badLog
