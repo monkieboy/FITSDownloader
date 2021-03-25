@@ -6,6 +6,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FITSDownloader.Tests", "FIT
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BulkFITSDownloader", "BulkFITSDownloader\BulkFITSDownloader.fsproj", "{CE35B117-24F9-4B00-B471-A88ED7396EC0}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "HtmlAgilityPack.FSharp", "HtmlAgilityPack.FSharp\HtmlAgilityPack.FSharp.fsproj", "{4B723D3E-EC07-4023-8C2C-A7AC4F7C236E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{CE35B117-24F9-4B00-B471-A88ED7396EC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE35B117-24F9-4B00-B471-A88ED7396EC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE35B117-24F9-4B00-B471-A88ED7396EC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B723D3E-EC07-4023-8C2C-A7AC4F7C236E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B723D3E-EC07-4023-8C2C-A7AC4F7C236E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B723D3E-EC07-4023-8C2C-A7AC4F7C236E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B723D3E-EC07-4023-8C2C-A7AC4F7C236E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

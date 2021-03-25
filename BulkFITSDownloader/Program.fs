@@ -1,17 +1,29 @@
 ﻿namespace BulkFITSDownloader
 
-open System.Text
-
-
 module Program =
+    
     open System.IO
     open CommandLine
     open FITSDownloader
-
+    open System.Text
+    
     let good = StringBuilder()
     let bad = StringBuilder()
     let headerRow = 1
+    let webClientDownloader = WebClientDownloader()
 
+    let setUpLoggingAndParseCmgArgs argv =
+        let results = parser.ParseCommandLine(inputs = argv, raiseOnUsage = true)
+        let survey = results.GetResult(Survey)
+        let saveTo = results.GetResult(SaveTo)
+        let inputFile = results.GetResult(InputFile)
+        let data = File.ReadAllLines  inputFile |> Seq.skip headerRow
+        let badLog = Path.Combine(Path.GetDirectoryName (inputFile), "bad.log")
+        let goodLog = Path.Combine(Path.GetDirectoryName(inputFile), "good.log")
+        printfn "Will save a log of errors to: %s" badLog
+        printfn "Will save a log for successful downloads to: %s" goodLog
+        goodLog, badLog, survey, saveTo, data
+    
     let downloadAndLogEachItem saveTo survey i (item:string) =
         let fromLocation = item.Split(',') |> Seq.last
 
@@ -25,25 +37,18 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
+        
+        let goodLog, badLog, survey, saveTo, data = setUpLoggingAndParseCmgArgs argv
+        
         try
-            let results = parser.ParseCommandLine(inputs = argv, raiseOnUsage = true)
+            try            
+                printfn "Bulk Download Started..."
+                data |> Seq.iteri (downloadAndLogEachItem saveTo survey)
+                printfn "Bulk Download Completed."
+            with e ->
+                printfn "%s" e.Message
 
-            let survey = results.GetResult(Survey)
-            let saveTo = results.GetResult(SaveTo)
-            let inputFile = results.GetResult(InputFile)
-            let data = File.ReadAllLines  inputFile |> Seq.skip headerRow
-            let badLog = Path.Combine(Path.GetDirectoryName (inputFile), "bad.log")
-            let goodLog = Path.Combine(Path.GetDirectoryName(inputFile), "good.log")
-            printfn "Will save a log of errors to: %s" badLog
-            printfn "Will save a log for successful downloads to: %s" goodLog
-            
-            printfn "Bulk Download Started..."
-            data |> Seq.iteri (downloadAndLogEachItem saveTo survey)
-            printfn "Bulk Download Completed."
-
+        finally
             File.AppendAllText(badLog, bad.ToString())            
-            File.AppendAllText(goodLog, good.ToString())
-            
-        with e ->
-            printfn "%s" e.Message
+            File.AppendAllText(goodLog, good.ToString())    
         0

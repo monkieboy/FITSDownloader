@@ -1,26 +1,45 @@
 ﻿namespace FITSDownloader
 
-open System.IO
-open System.Net
-open System.Text
-open FSharp.Data
+
 
 [<AutoOpen>]
 module Fetch =
+
+    open System.IO
+    open FSharp.Data
+    open HtmlAgilityPack.FSharp
+    open System
+    open System.Net
+    open System.Text
     
-    type Downloader = {
-        get : string*string->unit
-    }
+
+    type IDownloader =
+        abstract member Get : string->string->unit
     
-    let webClientDownloader =
-        { get =
-            let wc = new WebClient() // extract to parameter maybe, will help testing
-            wc.Encoding <- Encoding.ASCII
-            wc.Headers.Set("Content-Type", "image/fits")
-            wc.DownloadFile }
+    type WebClientDownloader() =
+        interface IDownloader with
+            member this.Get x y =
+                    let wc = new WebClient()
+                    wc.Encoding <- Encoding.ASCII
+                    wc.Headers.Set("Content-Type", "image/fits")
+                    wc.DownloadFile(x,y) 
     
-    let fitsBaseAddress = "https://dr12.sdss.org"
+    let fitsBaseAddress = "https://dr12.sdss.org" // TODO: obtain from a configuration
     
+    let findRedShift fromLocation =
+        let uri = fromLocation |> Uri
+        let doc = uri |> loadDoc
+
+        let descendantTds = doc |> descendants "td"
+        let redshiftTd = descendantTds |> Seq.find (fun ele -> ele |> innerText = "Redshift (z):")
+        let nextTds = redshiftTd.FollowingSiblings "td"
+        let redshiftValueTd = nextTds |> Seq.exactlyOne
+        let roundedString = Math.Round(redshiftValueTd |> innerText |> float, 4) |> string
+        roundedString.Replace('.','-')
+        
+    let getBestObjId (fromLocation:string) =
+        fromLocation.Split('=') |> Seq.last
+
     let getOrCreateDownloadDirectory saveTo =
         let downloadDestination = Path.Combine ( (Path.GetFullPath saveTo), "downloads")
         if not <| Directory.Exists(downloadDestination )
@@ -29,29 +48,27 @@ module Fetch =
             Directory.CreateDirectory(downloadDestination).Refresh()
         downloadDestination
 
-    let buildDownloadFileName (fromLocation:string) survey seed saveTo downloadDestination =
-        // TODO: convert this to configuration     
-        let defaultFileNameRaw = sprintf "%s_%s_%s" survey (seed.ToString().PadLeft(4, '0')) <| (fromLocation.Split('/') |> Seq.rev |> Seq.head)
+    let buildDownloadFileName (fromLocation:string) survey seed saveTo redshift bestObjId =
+        // TODO: convert this to configuration
+        let defaultFileNameRaw = sprintf "%s_%s_%s_%s_%s" survey (seed.ToString().PadLeft(4, '0')) redshift bestObjId <| (fromLocation.Split('/') |> Seq.rev |> Seq.head)
         let defaultFileName = defaultFileNameRaw.Replace(".aspx?sid=", "")
-        Path.Combine(downloadDestination, defaultFileName)
+        Path.Combine(getOrCreateDownloadDirectory saveTo, defaultFileName)
         
-    let download downloader from downloadTo  =
+    let download (downloader:IDownloader) from downloadTo  =
         try
-            downloader.get( from, downloadTo )
+            downloader.Get from downloadTo
             Result.Ok "FITS File Successfully Downloaded." // Big assumption that success happened just because the IO op didn't throw an exn
         with e ->
             printfn "inner: %s" e.InnerException.Message
             Result.Error e.Message
         
-    let private downloadFitsFile downloader fitsLocation saveTo survey seed =
+    let private downloadFitsFile downloader fitsLocation saveTo survey seed redshift bestObjId =
         match tryGetHref fitsLocation with
         | Some fromHref ->
-            let fromLocation = fromHref.Value()
             // EXAMPLE: https://dr12.sdss.org/sas/dr12/boss/spectro/redux/v5_7_0/spectra/3655/spec-3655-55240-0040.fits
+            let fromLocation = fromHref.Value()
 
-            
-            let downloadDestination = getOrCreateDownloadDirectory saveTo
-            let downloadTo = buildDownloadFileName fromLocation survey seed saveTo downloadDestination
+            let downloadTo = buildDownloadFileName fromLocation survey seed saveTo redshift bestObjId
         
             let from = fitsBaseAddress + fromLocation
             
@@ -59,22 +76,24 @@ module Fetch =
         | None -> Result.Error "Couldn't download the FITS file"
 
 
-    let loadInteractiveSpectrum downloader (href:HtmlAttribute) saveTo survey seed =
-        match doc(href.Value()) |> getHtml with
+    let loadInteractiveSpectrum downloader (href:HtmlAttribute) saveTo survey seed redshift bestObjId =
+        match getHtmlDocument(href.Value()) |> getHtml with
         | Some html ->
             match fitsDownloadLink html with
-            | Result.Ok fitsLocation -> downloadFitsFile downloader fitsLocation saveTo survey seed
+            | Result.Ok fitsLocation -> downloadFitsFile downloader fitsLocation saveTo survey seed redshift bestObjId
             | Result.Error error -> Result.Error error
         | None -> Result.Error "Couldn't load the quickview html document."
             
     let downloadFitsFileFrom downloader fromLocation saveTo survey seed =
-        match doc fromLocation |> getHtml with
+        match getHtmlDocument fromLocation |> getHtml with
         | Some html ->
             match interactiveSpectrumLink html with
             | Result.Ok interactiveSpectrumLocation ->
-                let hrefOpt = tryGetHref interactiveSpectrumLocation
-                match hrefOpt with
-                | Some href -> loadInteractiveSpectrum downloader href saveTo survey seed
+                match tryGetHref interactiveSpectrumLocation with
+                | Some href ->
+                    let redshift = findRedShift fromLocation
+                    let bestObjId = getBestObjId fromLocation
+                    loadInteractiveSpectrum downloader href saveTo survey seed redshift bestObjId
                 | None -> Result.Error "Couldn't locate the FITS file hyperlink."
             | Result.Error error -> Result.Error error
         | None -> Result.Error "Couldn't load the main html document."

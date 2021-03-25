@@ -1,6 +1,7 @@
 namespace BulkFITSDownloader
 
 module CommandLine =
+    
     open Argu
 
     type CliArgs =

@@ -13,4 +13,8 @@
       <PackageReference Include="FSharp.Data" Version="4.0.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\HtmlAgilityPack.FSharp\HtmlAgilityPack.FSharp.fsproj" />
+    </ItemGroup>
+
 </Project>
